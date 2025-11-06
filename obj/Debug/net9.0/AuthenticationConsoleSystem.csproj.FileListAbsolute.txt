@@ -7,6 +7,7 @@
 /home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/AuthenticationConsoleSystem.AssemblyInfoInputs.cache
 /home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/AuthenticationConsoleSystem.AssemblyInfo.cs
 /home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/AuthenticationConsoleSystem.csproj.CoreCompileInputs.cache
+/home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/AuthenticationConsoleSystem.sourcelink.json
 /home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/AuthenticationConsoleSystem.dll
 /home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/refint/AuthenticationConsoleSystem.dll
 /home/mazmorrdev/Documentos/Proyectos/C#/AuthenticationConsoleSystem/obj/Debug/net9.0/AuthenticationConsoleSystem.pdb

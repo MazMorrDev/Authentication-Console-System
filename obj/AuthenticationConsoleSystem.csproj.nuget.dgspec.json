@@ -44,6 +44,16 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Soenneker.Hashing.BCrypt": {
+              "target": "Package",
+              "version": "[3.0.415, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

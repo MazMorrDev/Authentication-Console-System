@@ -6,7 +6,7 @@ public class ConsolePersonalizer
     {
         Console.ForegroundColor = color;
         Console.WriteLine(text);
-        Console.WriteLine("");
         Console.ResetColor();
+        Console.WriteLine("");
     }
 }

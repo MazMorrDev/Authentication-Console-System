@@ -17,10 +17,27 @@ public class CommandProcesser
             case "login":
                 ExecuteLogin();
                 break;
+            case "logout":
+                ExecuteLogout();
+                break;
+            case "info":
+                ExecuteInfo();
+                break;
             default:
                 ConsolePersonalizer.ColoredPrint($"I can't do nothing with {input}, please type 'help' ", ConsoleColor.Red);
                 break;
         }
+    }
+
+    private static void ExecuteLogout()
+    {
+        throw new NotImplementedException();
+    }
+
+    private static void ExecuteInfo()
+    {
+        //This method should show information about the account if its login
+        throw new NotImplementedException();
     }
 
     private static void ExecuteLogin()
@@ -35,6 +52,7 @@ public class CommandProcesser
 
     private static void ExecuteHelp()
     {
+        ConsolePersonalizer.ColoredPrint("AuthenticationConsoleSystem " ,ConsoleColor.DarkCyan);
         throw new NotImplementedException();
     }
 }
