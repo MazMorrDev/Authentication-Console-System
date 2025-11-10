@@ -8,7 +8,7 @@ ConsolePersonalizer.ColoredPrint(@"
  |_|  |_|\__,_/___|_|  |_|\___/|_|  |_|  |____/ \___| \_/  
                                                            
 ┌──────────────────────────────────────────────────────────┐
-│    Welcome to AlphabeticalOrder! Type 'help' for         │
+│    Welcome to Authentication Console System! Type 'help' for         │
 │    instructions or 'order' to start processing files     │
 └──────────────────────────────────────────────────────────┘",
  ConsoleColor.Yellow);
@@ -20,7 +20,7 @@ while (true)
     string input = (Console.ReadLine() ?? "").Trim().ToLower();
     if (input.Equals("exit"))
     {
-        ConsolePersonalizer.ColoredPrint("Thx for using Authentication Console System CLI, bye bye :D", ConsoleColor.Green);
+        ConsolePersonalizer.ColoredPrint("Thx for using Authentication Console System, bye bye :D", ConsoleColor.Green);
         return;
     }
     CommandProcesser.ProcessCommand(input);

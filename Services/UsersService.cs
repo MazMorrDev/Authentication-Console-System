@@ -60,7 +60,7 @@ public class UsersService
 				Id = reader.GetInt32(0),
 				UserName = reader.IsDBNull(1) ? null : reader.GetString(1),
 				Email = reader.IsDBNull(2) ? null : reader.GetString(2),
-				Password = reader.IsDBNull(3) ? null : reader.GetString(3),
+				HashPassword = reader.IsDBNull(3) ? null : reader.GetString(3),
 			});
 		}
 		return result;
@@ -69,7 +69,7 @@ public class UsersService
 	public async Task<Users?> GetByIdAsync(int id)
 	{
 		var sql = "SELECT Id, UserName, Email, Password FROM Users WHERE Id = @Id;";
-		LogSql(sql, new[] { ("@Id", (object?)id) });
+		LogSql(sql, [("@Id", (object?)id)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -85,7 +85,7 @@ public class UsersService
 				Id = reader.GetInt32(0),
 				UserName = reader.IsDBNull(1) ? null : reader.GetString(1),
 				Email = reader.IsDBNull(2) ? null : reader.GetString(2),
-				Password = reader.IsDBNull(3) ? null : reader.GetString(3),
+				HashPassword = reader.IsDBNull(3) ? null : reader.GetString(3),
 			};
 		}
 		return null;
@@ -94,7 +94,7 @@ public class UsersService
 	public async Task<Users> CreateAsync(Users user)
 	{
 		var sql = "INSERT INTO Users (UserName, Email, Password) VALUES (@UserName, @Email, @Password);";
-		LogSql(sql, new[] { ("@UserName", (object?)user.UserName), ("@Email", (object?)user.Email), ("@Password", (object?)user.Password) });
+		LogSql(sql, [("@UserName", (object?)user.UserName), ("@Email", (object?)user.Email), ("@Password", (object?)user.HashPassword)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -103,7 +103,7 @@ public class UsersService
 
 		var p1 = cmd.CreateParameter(); p1.ParameterName = "@UserName"; p1.Value = (object?)user.UserName ?? DBNull.Value; cmd.Parameters.Add(p1);
 		var p2 = cmd.CreateParameter(); p2.ParameterName = "@Email"; p2.Value = (object?)user.Email ?? DBNull.Value; cmd.Parameters.Add(p2);
-		var p3 = cmd.CreateParameter(); p3.ParameterName = "@Password"; p3.Value = (object?)user.Password ?? DBNull.Value; cmd.Parameters.Add(p3);
+		var p3 = cmd.CreateParameter(); p3.ParameterName = "@Password"; p3.Value = (object?)user.HashPassword ?? DBNull.Value; cmd.Parameters.Add(p3);
 
 		await cmd.ExecuteNonQueryAsync();
 
@@ -131,7 +131,7 @@ public class UsersService
 	public async Task<bool> UpdateAsync(Users user)
 	{
 		var sql = "UPDATE Users SET UserName = @UserName, Email = @Email, Password = @Password WHERE Id = @Id;";
-		LogSql(sql, new[] { ("@Id", (object?)user.Id), ("@UserName", (object?)user.UserName), ("@Email", (object?)user.Email) });
+		LogSql(sql, [("@Id", (object?)user.Id), ("@UserName", (object?)user.UserName), ("@Email", (object?)user.Email)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -141,7 +141,7 @@ public class UsersService
 		var pId = cmd.CreateParameter(); pId.ParameterName = "@Id"; pId.Value = user.Id; cmd.Parameters.Add(pId);
 		var p1 = cmd.CreateParameter(); p1.ParameterName = "@UserName"; p1.Value = (object?)user.UserName ?? DBNull.Value; cmd.Parameters.Add(p1);
 		var p2 = cmd.CreateParameter(); p2.ParameterName = "@Email"; p2.Value = (object?)user.Email ?? DBNull.Value; cmd.Parameters.Add(p2);
-		var p3 = cmd.CreateParameter(); p3.ParameterName = "@Password"; p3.Value = (object?)user.Password ?? DBNull.Value; cmd.Parameters.Add(p3);
+		var p3 = cmd.CreateParameter(); p3.ParameterName = "@Password"; p3.Value = (object?)user.HashPassword ?? DBNull.Value; cmd.Parameters.Add(p3);
 
 		var affected = await cmd.ExecuteNonQueryAsync();
 		return affected > 0;
@@ -152,8 +152,8 @@ public class UsersService
 		var sqlDelRelations = "DELETE FROM UserRoles WHERE UserId = @Id;";
 		var sql = "DELETE FROM Users WHERE Id = @Id;";
 
-		LogSql(sqlDelRelations, new[] { ("@Id", (object?)id) });
-		LogSql(sql, new[] { ("@Id", (object?)id) });
+		LogSql(sqlDelRelations, [("@Id", (object?)id)]);
+		LogSql(sql, [("@Id", (object?)id)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -179,7 +179,7 @@ public class UsersService
 	public async Task<List<Roles>> GetRolesForUserAsync(int userId)
 	{
 		var sql = "SELECT r.Id, r.Name FROM Roles r INNER JOIN UserRoles ur ON r.Id = ur.RoleId WHERE ur.UserId = @UserId;";
-		LogSql(sql, new[] { ("@UserId", (object?)userId) });
+		LogSql(sql, [("@UserId", (object?)userId)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -200,7 +200,7 @@ public class UsersService
 	{
 		var sqlCheck = "SELECT COUNT(1) FROM UserRoles WHERE UserId = @UserId AND RoleId = @RoleId;";
 		var sqlInsert = "INSERT INTO UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId);";
-		LogSql(sqlCheck, new[] { ("@UserId", (object?)userId), ("@RoleId", (object?)roleId) });
+		LogSql(sqlCheck, [("@UserId", (object?)userId), ("@RoleId", (object?)roleId)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -222,7 +222,7 @@ public class UsersService
 	public async Task<bool> RemoveRoleAsync(int userId, int roleId)
 	{
 		var sql = "DELETE FROM UserRoles WHERE UserId = @UserId AND RoleId = @RoleId;";
-		LogSql(sql, new[] { ("@UserId", (object?)userId), ("@RoleId", (object?)roleId) });
+		LogSql(sql, [("@UserId", (object?)userId), ("@RoleId", (object?)roleId)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -238,7 +238,7 @@ public class UsersService
 	{
 		var sql = "SELECT Id, UserName, Email, Password FROM Users WHERE (UserName = @u OR Email = @u) AND Password = @p LIMIT 1;";
 		// LIMIT is SQLite/MySQL; other DBs may need different syntax (TOP 1 or FETCH FIRST 1 ROWS ONLY).
-		LogSql(sql, new[] { ("@u", (object?)usernameOrEmail), ("@p", (object?)password) });
+		LogSql(sql, [("@u", (object?)usernameOrEmail), ("@p", (object?)password)]);
 
 		using var conn = _connectionFactory();
 		await conn.OpenAsync();
@@ -255,7 +255,7 @@ public class UsersService
 				Id = reader.GetInt32(0),
 				UserName = reader.IsDBNull(1) ? null : reader.GetString(1),
 				Email = reader.IsDBNull(2) ? null : reader.GetString(2),
-				Password = reader.IsDBNull(3) ? null : reader.GetString(3),
+				HashPassword = reader.IsDBNull(3) ? null : reader.GetString(3),
 			};
 		}
 		return null;
