@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class UserRoles
+public class UserRole
 {
 	public int Id { get; set; }
 
@@ -12,8 +12,8 @@ public class UserRoles
 
 	// Navigation properties
 	[ForeignKey(nameof(UserId))]
-	public Users? User { get; set; }
+	public User? User { get; set; }
 
 	[ForeignKey(nameof(RoleId))]
-	public Roles? Role { get; set; }
+	public Role? Role { get; set; }
 }
