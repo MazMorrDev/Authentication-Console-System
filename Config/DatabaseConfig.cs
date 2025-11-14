@@ -17,12 +17,6 @@ public static class DatabaseConfig
     };
 }
 
-// Como usar DatabaseConfig:
-// // En Program.cs
-// var connectionString = "Data Source=authentication.db";
-// Func<DbConnection> connectionFactory = () => new SqliteConnection(connectionString);
-
-// // Instanciar servicios
-// var usersService = new UsersService(connectionFactory);
-// var rolesService = new RolesServices(connectionFactory);
-// var userRolesService = new UserRolesService(connectionFactory);
+// // How To Use DatabaseConfig:
+//    private static readonly Func<DbConnection> _connectionFactory = DatabaseConfig.ConnectionFactory;
+//    private static readonly UserService _userService = new(_connectionFactory);
