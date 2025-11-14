@@ -176,7 +176,6 @@ public class CommandProcesser
             "register      Create a new user account\n" +
             "login         Login with an existent user account\n" +
             "logout <id>   Logout an existent user account\n" +
-            "info          Shows information about the current logged in user\n" +
             "info <id>     Shows information about the user with the provided Id\n" +
             "exit          Shutdown the application",
             ConsoleColor.DarkCyan);
