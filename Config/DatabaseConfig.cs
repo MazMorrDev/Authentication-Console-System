@@ -7,7 +7,7 @@ public static class DatabaseConfig
 {
     // Cadena de conexión CORRECTA para PostgreSQL
     public static string ConnectionString { get; } =
-        "Host=localhost;Port=5432;Database=authentication_console_system;Username=mazmorrdev;Password=KevinICC12;";
+        "Host=localhost;Port=5432;Database=authentication_console_system;Username=postgres;Password=KevinICC;";
 
     public static Func<DbConnection> ConnectionFactory => () =>
     {
