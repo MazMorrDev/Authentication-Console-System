@@ -1,18 +1,13 @@
 ﻿using System.Data.Common;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AuthenticationConsoleSystem;
 
 public class CommandProcesser
 {
-    // private static UsersService _usersService = new UsersService();
-    private static readonly User _currentUser = new(); // Para trackear el usuario logueado
     private static readonly Func<DbConnection> _connectionFactory = DatabaseConfig.ConnectionFactory;
     private static readonly UserService _userService = new(_connectionFactory);
-    private static readonly RoleService _roleService = new(_connectionFactory);
-    private static readonly UserRoleService _userRoleService = new(_connectionFactory);
-
-    public static void ProcessCommand(string input)
+    
+    public static async Task ProcessCommandAsync(string input)
     {
         // Dividir el input por espacios para manejar comandos con parámetros
         var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -23,21 +18,26 @@ public class CommandProcesser
             case "help":
                 ExecuteHelp();
                 break;
+            case "list":
+                await ExecuteListAsync();
+                break;
             case "register":
-                ExecuteRegisterUser();
+                await ExecuteRegisterUserAsync();
                 break;
             case "login":
-                ExecuteLogin();
+                await ExecuteLoginAsync();
                 break;
             case "logout":
-                if (parts.Length > 1) ExecuteLogout(ParseHelper.ParseIntWithErrorHandler(parts[1]));
+                if (parts.Length > 1) 
+                    await ExecuteLogoutAsync(ParseHelper.ParseIntWithErrorHandler(parts[1]));
+                else
+                    ConsolePersonalizer.ColorPrint("Please provide user ID: logout <id>", ConsoleColor.Red);
                 break;
             case "info":
-                if (parts.Length > 1) ExecuteInfo(ParseHelper.ParseIntWithErrorHandler(parts[1]));
-                else ExecuteExit();
-                break;
-            case "exit":
-                ExecuteExit();
+                if (parts.Length > 1) 
+                    await ExecuteInfoAsync(ParseHelper.ParseIntWithErrorHandler(parts[1]));
+                else
+                    ConsolePersonalizer.ColorPrint("Please provide user ID: info <id>", ConsoleColor.Red);
                 break;
             default:
                 ConsolePersonalizer.ColorPrint(
@@ -47,33 +47,68 @@ public class CommandProcesser
         }
     }
 
-    private static void ExecuteLogout(int? id)
+    private static async Task ExecuteListAsync()
     {
-
-        // hacerle logout al id
-        if (_currentUser == null)
+        try
         {
-            ConsolePersonalizer.ColorPrint("No user is currently logged in.", ConsoleColor.Yellow);
-            return;
-        }
+            var users = await _userService.GetAllAsync();
+            if (users.Count < 1)
+            {
+                ConsolePersonalizer.ColorPrint("There aren't any accounts to show", ConsoleColor.DarkRed);
+                return;
+            }
 
-        _currentUser.IsLogged = false;
-        //Acordarse de guardarlo en la base de datos
-        ConsolePersonalizer.ColorPrint("Successfully logged out!", ConsoleColor.Green);
+            ConsolePersonalizer.ColorPrint($"Found {users.Count} user(s):", ConsoleColor.DarkBlue);
+            foreach (var user in users)
+            {
+                var status = user.IsLogged ? "🟢 ONLINE" : "🔴 OFFLINE";
+                ConsolePersonalizer.ColorPrint($"ID: {user.Id} | User: {user.UserName} | {status}", 
+                    user.IsLogged ? ConsoleColor.Green : ConsoleColor.DarkGray);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsolePersonalizer.ColorPrint($"Error retrieving users: {ex.Message}", ConsoleColor.Red);
+        }
     }
 
-    private static void ExecuteInfo(int? id)
+    private static async Task ExecuteLogoutAsync(int? id)
     {
         if (id == null)
         {
-            ConsolePersonalizer.ColorPrint("You didn't pass the ID from the user that you are looking for", ConsoleColor.Red);
+            ConsolePersonalizer.ColorPrint("Invalid user ID", ConsoleColor.Red);
             return;
         }
-        else if (id != null)
-        {
-            // Buscar información de usuario por ID
-            User user = _userService.GetByIdAsync((int)id).Result ?? new User();
 
+        try
+        {
+            var result = await _userService.LogoutUserAsync(id.Value);
+            if (result)
+            {
+                ConsolePersonalizer.ColorPrint($"User with ID {id} logged out successfully!", ConsoleColor.Green);
+            }
+            else
+            {
+                ConsolePersonalizer.ColorPrint($"User with ID {id} not found or already logged out", ConsoleColor.Yellow);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsolePersonalizer.ColorPrint($"Error during logout: {ex.Message}", ConsoleColor.Red);
+        }
+    }
+
+    private static async Task ExecuteInfoAsync(int? id)
+    {
+        if (id == null)
+        {
+            ConsolePersonalizer.ColorPrint("You didn't provide a valid user ID", ConsoleColor.Red);
+            return;
+        }
+
+        try
+        {
+            var user = await _userService.GetByIdAsync(id.Value);
             if (user != null)
             {
                 DisplayUserInfo(user);
@@ -83,31 +118,42 @@ public class CommandProcesser
                 ConsolePersonalizer.ColorPrint($"User with ID '{id}' not found.", ConsoleColor.Red);
             }
         }
-
+        catch (Exception ex)
+        {
+            ConsolePersonalizer.ColorPrint($"Error retrieving user info: {ex.Message}", ConsoleColor.Red);
+        }
     }
 
     private static void DisplayUserInfo(User user)
     {
-        ConsolePersonalizer.ColorPrint($"User Information:", ConsoleColor.Cyan);
-        ConsolePersonalizer.ColorPrint($"ID: {user.Id}", ConsoleColor.White);
-        ConsolePersonalizer.ColorPrint($"Username: {user.UserName}", ConsoleColor.White);
-        ConsolePersonalizer.ColorPrint($"Hashed Password: {user.HashPassword}", ConsoleColor.White);
-        ConsolePersonalizer.ColorPrint($"Is Logged: {user.IsLogged}", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("╔══════════════════════════════════╗", ConsoleColor.Cyan);
+        ConsolePersonalizer.ColorPrint("║         USER INFORMATION         ║", ConsoleColor.Cyan);
+        ConsolePersonalizer.ColorPrint("╠══════════════════════════════════╣", ConsoleColor.Cyan);
+        ConsolePersonalizer.ColorPrint($"║ ID: {user.Id,-28} ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint($"║ Username: {user.UserName,-20} ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint($"║ Status: {(user.IsLogged ? "LOGGED IN" : "LOGGED OUT"),-21} ║", 
+            user.IsLogged ? ConsoleColor.Green : ConsoleColor.Yellow);
+        ConsolePersonalizer.ColorPrint("║                                  ║", ConsoleColor.Cyan);
+        ConsolePersonalizer.ColorPrint($"║ Password Hash:                  ║", ConsoleColor.White);
+        
+        if (!string.IsNullOrEmpty(user.HashPassword))
+        {
+            var hashPreview = user.HashPassword.Length > 20 
+                ? user.HashPassword[..20] + "..." 
+                : user.HashPassword;
+            ConsolePersonalizer.ColorPrint($"║ {hashPreview,-32} ║", ConsoleColor.DarkGray);
+        }
+        
+        ConsolePersonalizer.ColorPrint("╚══════════════════════════════════╝", ConsoleColor.Cyan);
     }
 
-    private static void ExecuteLogin()
+    private static async Task ExecuteLoginAsync()
     {
-        if (_currentUser != null)
-        {
-            ConsolePersonalizer.ColorPrint($"You are already logged in as {_currentUser.UserName}. Please logout first.", ConsoleColor.Yellow);
-            return;
-        }
+        ConsolePersonalizer.ColorPrint("Please enter your username:", ConsoleColor.Green);
+        string username = Console.ReadLine()?.Trim() ?? "";
 
-        ConsolePersonalizer.ColorPrint("Please write your username:", ConsoleColor.Green);
-        string username = Console.ReadLine() ?? "";
-
-        ConsolePersonalizer.ColorPrint("Please write your password:", ConsoleColor.Green);
-        string password = Console.ReadLine() ?? "";
+        ConsolePersonalizer.ColorPrint("Please enter your password:", ConsoleColor.Green);
+        string password = Console.ReadLine()?.Trim() ?? "";
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
@@ -115,27 +161,33 @@ public class CommandProcesser
             return;
         }
 
-        // // Llamar al servicio para login
-        // var loginResult = _usersService.Login(username, password);
+        try
+        {
+            var loginResult = await _userService.LoginUserAsync(username, password);
 
-        // if (loginResult.Success)
-        // {
-        //     _currentUser = loginResult.User;
-        //     ConsolePersonalizer.ColorPrint($"Welcome back, {_currentUser.Username}!", ConsoleColor.Green);
-        // }
-        // else
-        // {
-        //     ConsolePersonalizer.ColorPrint(loginResult.Message, ConsoleColor.Red);
-        // }
+            if (loginResult != null)
+            {
+                ConsolePersonalizer.ColorPrint($"🎉 Welcome back, {loginResult.UserName}!", ConsoleColor.Green);
+                ConsolePersonalizer.ColorPrint($"Your user ID is: {loginResult.Id}", ConsoleColor.Cyan);
+            }
+            else
+            {
+                ConsolePersonalizer.ColorPrint("❌ Invalid username or password", ConsoleColor.Red);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsolePersonalizer.ColorPrint($"Error during login: {ex.Message}", ConsoleColor.Red);
+        }
     }
 
-    private static void ExecuteRegisterUser()
+    private static async Task ExecuteRegisterUserAsync()
     {
-        ConsolePersonalizer.ColorPrint("Please write your username:", ConsoleColor.Green);
-        string username = Console.ReadLine() ?? "";
+        ConsolePersonalizer.ColorPrint("Please enter your username:", ConsoleColor.Green);
+        string username = Console.ReadLine()?.Trim() ?? "";
 
-        ConsolePersonalizer.ColorPrint("Please write your password:", ConsoleColor.Green);
-        string password = Console.ReadLine() ?? "";
+        ConsolePersonalizer.ColorPrint("Please enter your password:", ConsoleColor.Green);
+        string password = Console.ReadLine()?.Trim() ?? "";
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
@@ -149,41 +201,46 @@ public class CommandProcesser
             return;
         }
 
-        if (password.Length < 6)
+        if (password.Length < 4)
         {
-            ConsolePersonalizer.ColorPrint("Password must be at least 6 characters long.", ConsoleColor.Red);
+            ConsolePersonalizer.ColorPrint("Password must be at least 4 characters long.", ConsoleColor.Red);
             return;
         }
 
-        // // Crear y registrar el usuario
-        // var registerResult = _usersService.RegisterUser(username, password);
+        try
+        {
+            var registerResult = await _userService.RegisterUserAsync(username, password);
 
-        // if (registerResult.Success)
-        // {
-        //     ConsolePersonalizer.ColorPrint($"User '{username}' registered successfully!", ConsoleColor.Green);
-        // }
-        // else
-        // {
-        //     ConsolePersonalizer.ColorPrint(registerResult.Message, ConsoleColor.Red);
-        // }
+            if (registerResult)
+            {
+                ConsolePersonalizer.ColorPrint($"✅ User '{username}' registered successfully!", ConsoleColor.Green);
+                ConsolePersonalizer.ColorPrint("You can now login with your credentials", ConsoleColor.Cyan);
+            }
+            else
+            {
+                ConsolePersonalizer.ColorPrint("❌ Registration failed. Username might already exist.", ConsoleColor.Red);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsolePersonalizer.ColorPrint($"Error during registration: {ex.Message}", ConsoleColor.Red);
+        }
     }
-
 
     private static void ExecuteHelp()
     {
-        ConsolePersonalizer.ColorPrint(
-            "AuthenticationConsoleSystem \n\n" +
-            "register      Create a new user account\n" +
-            "login         Login with an existent user account\n" +
-            "logout <id>   Logout an existent user account\n" +
-            "info <id>     Shows information about the user with the provided Id\n" +
-            "exit          Shutdown the application",
-            ConsoleColor.DarkCyan);
-    }
-
-    private static void ExecuteExit()
-    {
-        ConsolePersonalizer.ColorPrint("Goodbye! Come back soon :D", ConsoleColor.Cyan);
-        Environment.Exit(0);
+        ConsolePersonalizer.ColorPrint("╔══════════════════════════════════════════════════════╗", ConsoleColor.DarkCyan);
+        ConsolePersonalizer.ColorPrint("║           AUTHENTICATION CONSOLE SYSTEM             ║", ConsoleColor.DarkCyan);
+        ConsolePersonalizer.ColorPrint("╠══════════════════════════════════════════════════════╣", ConsoleColor.DarkCyan);
+        ConsolePersonalizer.ColorPrint("║ Available commands:                                 ║", ConsoleColor.DarkCyan);
+        ConsolePersonalizer.ColorPrint("║                                                    ║", ConsoleColor.DarkCyan);
+        ConsolePersonalizer.ColorPrint("║ list          - Show all user accounts             ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("║ register      - Create a new user account          ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("║ login         - Login with existing account        ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("║ logout <id>   - Logout user with specified ID      ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("║ info <id>     - Show user information by ID        ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("║ exit          - Shutdown the application           ║", ConsoleColor.White);
+        ConsolePersonalizer.ColorPrint("║                                                    ║", ConsoleColor.DarkCyan);
+        ConsolePersonalizer.ColorPrint("╚══════════════════════════════════════════════════════╝", ConsoleColor.DarkCyan);
     }
 }

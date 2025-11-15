@@ -20,8 +20,8 @@ while (true)
     string input = (Console.ReadLine() ?? "").Trim().ToLower();
     if (input.Equals("exit"))
     {
-        ConsolePersonalizer.ColorPrint("Thx for using Authentication Console System, bye bye :D", ConsoleColor.Green);
-        return;
+        ConsolePersonalizer.ColorPrint("👋 Goodbye! Come back soon! :D", ConsoleColor.Cyan);
+        Environment.Exit(0);
     }
-    CommandProcesser.ProcessCommand(input);
+    await CommandProcesser.ProcessCommandAsync(input);
 }
