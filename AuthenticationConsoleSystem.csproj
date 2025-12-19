@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0-rc.2" />
     <PackageReference Include="Soenneker.Hashing.BCrypt" Version="4.0.425" />
   </ItemGroup>

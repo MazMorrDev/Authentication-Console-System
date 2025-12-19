@@ -1,4 +1,5 @@
 ﻿using AuthenticationConsoleSystem;
+using DotNetEnv;
 
 namespace AuthenticationConsoleSystem
 {
@@ -9,6 +10,7 @@ namespace AuthenticationConsoleSystem
 
         static async Task Main(string[] args)
         {
+            Env.Load();
             try
             {
                 await ShowWelcomeScreenAsync();

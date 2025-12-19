@@ -6,10 +6,10 @@ namespace AuthenticationConsoleSystem;
 
 public static class DatabaseConfig
 {
-    Env.load();
+    
     // Cadena de conexión CORRECTA para PostgreSQL
     public static string ConnectionString { get; } =
-        Env.getString(DATABASE_CONNECTION);
+        Env.GetString("DATABASE_CONFIG");
 
     public static Func<DbConnection> ConnectionFactory => () =>
     {
