@@ -1,13 +1,15 @@
 ﻿using System.Data.Common;
 using Npgsql;
+using DotNetEnv;
 
 namespace AuthenticationConsoleSystem;
 
 public static class DatabaseConfig
 {
+    Env.load();
     // Cadena de conexión CORRECTA para PostgreSQL
     public static string ConnectionString { get; } =
-        "Host=localhost;Port=5432;Database=authentication_console_system;Username=postgres;Password=KevinICC;";
+        Env.getString(DATABASE_CONNECTION);
 
     public static Func<DbConnection> ConnectionFactory => () =>
     {
